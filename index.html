@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Composition Guide</title>
+    <style>
+        /* Base Mobile Styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 15px;
+            background-color: #f0f0f0;
+            font-size: 16px;
+        }
+
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 100%;
+            overflow: hidden;
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin: 0 0 25px 0;
+            font-size: 1.8em;
+        }
+
+        h2 {
+            font-size: 1.4em;
+            margin: 0 0 15px 0;
+        }
+
+        .step {
+            display: none;
+            text-align: center;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+            margin: 15px 0;
+        }
+
+        button {
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            background-color: #3498db;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+            transform: translateY(-1px);
+        }
+
+        .progression {
+            font-size: 1.1em;
+            margin: 12px 0;
+            padding: 10px;
+            background-color: #ecf0f1;
+            border-radius: 6px;
+            line-height: 1.4;
+        }
+
+        .back-btn {
+            background-color: #95a5a6;
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        .chord {
+            cursor: pointer;
+            color: #3498db;
+            text-decoration: underline;
+            transition: color 0.2s;
+        }
+
+        .chord:hover {
+            color: #2980b9;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: white;
+            margin: 20vh auto;
+            padding: 20px;
+            width: 85%;
+            max-width: 400px;
+            border-radius: 8px;
+            animation: modalSlide 0.3s ease-out;
+        }
+
+        @keyframes modalSlide {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .close {
+            position: absolute;
+            right: 15px;
+            top: 5px;
+            font-size: 28px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .chord-diagram {
+            font-family: 'Courier New', monospace;
+            white-space: pre;
+            margin: 10px 0;
+            line-height: 1.3;
+            font-size: 0.9em;
+            overflow-x: auto;
+        }
+
+        /* Tablet Styles */
+        @media (min-width: 480px) {
+            body {
+                padding: 20px;
+                font-size: 17px;
+            }
+
+            .container {
+                padding: 25px;
+            }
+
+            .options {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            button {
+                padding: 14px;
+                font-size: 1em;
+            }
+
+            .progression {
+                font-size: 1.2em;
+            }
+        }
+
+        /* Desktop Styles */
+        @media (min-width: 768px) {
+            body {
+                padding: 30px;
+                font-size: 18px;
+            }
+
+            .container {
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 30px;
+            }
+
+            h1 {
+                font-size: 2.2em;
+                margin-bottom: 30px;
+            }
+
+            h2 {
+                font-size: 1.6em;
+                margin-bottom: 20px;
+            }
+
+            .options {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 12px;
+                margin: 20px 0;
+            }
+
+            button {
+                padding: 15px;
+                font-size: 1.1em;
+            }
+
+            .progression {
+                font-size: 1.3em;
+                padding: 15px;
+                margin: 15px 0;
+            }
+
+            .modal-content {
+                padding: 25px;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .container {
+                margin: 30px auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Music Composition Guide</h1>
+        
+        <div class="step active" id="styleStep">
+            <h2>Select Your Music Style</h2>
+            <div class="options" id="styleOptions"></div>
+        </div>
+
+        <div class="step" id="keyStep">
+            <h2>Choose a Key</h2>
+            <div class="options" id="keyOptions"></div>
+            <button class="back-btn" onclick="showStep('styleStep')">Back</button>
+        </div>
+
+        <div class="step" id="progressionStep">
+            <h2>Common Chord Progressions</h2>
+            <div id="progressions"></div>
+            <button class="back-btn" onclick="showStep('keyStep')">Back</button>
+        </div>
+    </div>
+
+    <div id="chordModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3 id="chordTitle"></h3>
+            <div class="chord-diagram" id="chordDiagram"></div>
+        </div>
+    </div>
+
+    <script>
+        const styleData = {
+            'Pop': {
+                keys: ['C', 'G', 'Am', 'F'],
+                progressions: {
+                    'C': ['C - G - Am - F', 'Am - F - C - G', 'C - Em - F - G', 'C - Am - F - G'],
+                    'G': ['G - D - Em - C', 'G - Bm - C - D', 'Em - C - G - D', 'G - C - D - Em'],
+                    'Am': ['Am - F - G - C', 'Am - G - F - E', 'Am - C - G - Am', 'Am - Dm - E - Am'],
+                    'F': ['F - Bb - C - F', 'F - Am - Dm - G', 'F - C - Dm - Bb', 'F - Gm - C - F']
+                }
+            },
+            'Rock': {
+                keys: ['E', 'A', 'G', 'D'],
+                progressions: {
+                    'E': ['E - A - B - E', 'E - D - A - E', 'E - G - A - D', 'E - C#m - A - B'],
+                    'A': ['A - D - E - A', 'A - G - D - A', 'A - E - F#m - D', 'A - Bm - D - E'],
+                    'G': ['G - C - D - G', 'G - D - Em - C', 'G - Em - C - D', 'G - Am - C - D'],
+                    'D': ['D - A - Bm - G', 'D - G - A - D', 'D - F#m - Bm - E', 'D - Em - G - A']
+                }
+            },
+            'Jazz': {
+                keys: ['F', 'Dm', 'Bb', 'Gm'],
+                progressions: {
+                    'F': ['Fmaj7 - D7 - Gm7 - C7', 'F - Bb - C7 - F', 'Fm7 - Bb7 - Eb - Ab', 'F - E7 - A7 - Dm7'],
+                    'Dm': ['Dm7 - G7 - Cmaj7 - Fmaj7', 'Dm7 - Gm7 - C7 - F6', 'Dm - A7 - Dm - A7', 'Dm - G7 - C - F'],
+                    'Bb': ['Bb7 - Eb7 - Abmaj7 - Dbmaj7', 'Bb - Eb - F - Bb', 'Bbm7 - Eb7 - Ab - Db', 'Bb - Gm - Eb - F'],
+                    'Gm': ['Gm7 - C7 - Fmaj7 - Bbmaj7', 'Gm7 - Gm6 - F7 - Bb7', 'Gm - D7 - Gm - D7', 'Gm - C7 - F - Bb']
+                }
+            },
+            'Blues': {
+                keys: ['A', 'E', 'B7', 'G'],
+                progressions: {
+                    'A': ['A7 - D7 - A7 - E7', 'A7 - D7 - E7 - A7', 'A7 - B7 - D7 - E7', 'A7 - C7 - D7 - E7'],
+                    'E': ['E7 - A7 - E7 - B7', 'E7 - A7 - B7 - E7', 'E7 - G7 - A7 - B7', 'E7 - C7 - A7 - B7'],
+                    'B7': ['B7 - E7 - A7 - D7', 'B7 - F#7 - E7 - A7', 'B7 - G#7 - C#7 - F#7', 'B7 - D7 - G7 - C7'],
+                    'G': ['G7 - C7 - G7 - D7', 'G7 - C7 - D7 - G7', 'G7 - A7 - C7 - D7', 'G7 - Bb7 - C7 - D7']
+                }
+            },
+            'Country': {
+                keys: ['G', 'C', 'D', 'A'],
+                progressions: {
+                    'G': ['G - C - D - G', 'G - Em - C - D', 'G - D - Em - C', 'G - Am - C - D'],
+                    'C': ['C - F - G - C', 'C - Am - F - G', 'C - G - Am - F', 'C - Dm - G - C'],
+                    'D': ['D - G - A - D', 'D - Bm - G - A', 'D - Em - G - A', 'D - F#m - Bm - E'],
+                    'A': ['A - D - E - A', 'A - F#m - D - E', 'A - Bm - D - E', 'A - C#m - F#m - B']
+                }
+            },
+            'Classical': {
+                keys: ['C', 'G', 'D', 'A'],
+                progressions: {
+                    'C': ['C - G - Am - Em - F - C - F - G', 'C - F - G7 - C', 'C - Am - Dm - G7', 'C - Em - F - G'],
+                    'G': ['G - D - Em - Bm - C - G - C - D', 'G - C - D7 - G', 'G - Em - Am - D7', 'G - Bm - C - D'],
+                    'D': ['D - A - Bm - F#m - G - D - G - A', 'D - G - A7 - D', 'D - Bm - Em - A7', 'D - F#m - G - A'],
+                    'A': ['A - E - F#m - C#m - D - A - D - E', 'A - D - E7 - A', 'A - F#m - Bm - E7', 'A - C#m - D - E']
+                }
+            },
+            'Metal': {
+                keys: ['Em', 'Dm', 'A', 'C'],
+                progressions: {
+                    'Em': ['Em - C - G - D', 'Em - B - A - Em', 'Em - F - G - C', 'Em - G - D - C'],
+                    'Dm': ['Dm - A - Bb - F', 'Dm - C - G - Dm', 'Dm - Bb - C - F', 'Dm - Gm - A - Dm'],
+                    'A': ['A - D - E - A', 'A - G - D - A', 'A - E - F#m - D', 'A - Bm - D - E'],
+                    'C': ['C - F - G - C', 'C - Am - F - G', 'C - G - Am - F', 'C - Dm - G - C']
+                }
+            },
+            'R&B': {
+                keys: ['Bb', 'F', 'Gm', 'Eb'],
+                progressions: {
+                    'Bb': ['Bbmaj7 - Eb7 - Am7 - D7', 'Bb - Eb - F - Bb', 'Bbm7 - Eb7 - Ab - Db', 'Bb - Gm - Eb - F'],
+                    'F': ['Fmaj7 - Bbm7 - Eb - Ab', 'F - Bb - C - F', 'F - Am - Dm - G', 'F - C - Dm - Bb'],
+                    'Gm': ['Gm7 - C7 - Fmaj7 - Bbmaj7', 'Gm7 - Gm6 - F7 - Bb7', 'Gm - D7 - Gm - D7', 'Gm - C7 - F - Bb'],
+                    'Eb': ['Eb - Bb - F - Bb', 'Eb - Ab - Bb - Eb', 'Eb - Cm - Ab - Bb', 'Eb - Fm - Bb - Eb']
+                }
+            },
+            'Electronic': {
+                keys: ['Am', 'Cm', 'Fm', 'Dm'],
+                progressions: {
+                    'Am': ['Am - F - C - G', 'Am - Em - F - C', 'Am - G - F - Em', 'Am - Dm - G - C'],
+                    'Cm': ['Cm - Ab - Eb - Bb', 'Cm - Fm - G - Cm', 'Cm - Gm - Dm - Am', 'Cm - F - G - C'],
+                    'Fm': ['Fm - Cm - Gm - Dm', 'Fm - Bbm - Eb - Ab', 'Fm - Db - Ab - Eb', 'Fm - G# - C# - F#'],
+                    'Dm': ['Dm - Am - Em - Bb', 'Dm - G - C - F', 'Dm - F - Bb - Eb', 'Dm - Gm - C - F']
+                }
+            },
+            'Reggae': {
+                keys: ['C', 'G', 'Am', 'F'],
+                progressions: {
+                    'C': ['C - G - Am - F', 'C - Am - F - G', 'C - F - G - Em', 'C - Dm - G - C'],
+                    'G': ['G - C - D - G', 'G - Em - C - D', 'G - D - Em - C', 'G - Am - C - D'],
+                    'Am': ['Am - F - G - C', 'Am - Dm - E - Am', 'Am - G - F - E', 'Am - C - G - Em'],
+                    'F': ['F - Bb - C - F', 'F - Am - Dm - G', 'F - C - Dm - Bb', 'F - Gm - C - F']
+                }
+            },
+            'Folk': {
+                keys: ['G', 'C', 'D', 'Am'],
+                progressions: {
+                    'G': ['G - C - D - G', 'G - Em - C - D', 'G - Am - C - D', 'G - Bm - Em - C'],
+                    'C': ['C - F - G - C', 'C - Am - F - G', 'C - G - Am - F', 'C - Dm - G - C'],
+                    'D': ['D - G - A - D', 'D - Bm - G - A', 'D - Em - G - A', 'D - F#m - Bm - E'],
+                    'Am': ['Am - F - G - C', 'Am - G - F - E', 'Am - C - G - Am', 'Am - Dm - E - Am']
+                }
+            },
+            'Punk Rock': {
+                keys: ['E', 'A', 'G', 'D'],
+                progressions: {
+                    'E': ['E5 - A5 - E5 - A5', 'E5 - G5 - A5 - E5', 'E5 - B5 - A5 - E5', 'E5 - D5 - A5 - E5'],
+                    'A': ['A5 - D5 - A5 - D5', 'A5 - E5 - D5 - A5', 'A5 - G5 - D5 - A5', 'A5 - E5 - B5 - A5'],
+                    'G': ['G5 - C5 - D5 - G5', 'G5 - D5 - Em5 - C5', 'G5 - Em5 - C5 - D5', 'G5 - Am5 - C5 - D5'],
+                    'D': ['D5 - A5 - Bm5 - G5', 'D5 - G5 - A5 - D5', 'D5 - F#m5 - Bm5 - E5', 'D5 - Em5 - G5 - A5']
+                }
+            },
+            'Soul': {
+                keys: ['Eb', 'Bb', 'F', 'Cm'],
+                progressions: {
+                    'Eb': ['Eb - Bb - F - Bb', 'Eb - Ab - Bb - Eb', 'Eb - Cm - Ab - Bb', 'Eb - Fm - Bb - Eb'],
+                    'Bb': ['Bb - F - Gm - C', 'Bb - Eb - F - Bb', 'Bb - Gm - Eb - F', 'Bb - Dm - Gm - C'],
+                    'F': ['F - Bb - C - F', 'F - Am - Dm - G', 'F - C - Dm - Bb', 'F - Gm - C - F'],
+                    'Cm': ['Cm - Ab - Eb - Bb', 'Cm - Fm - G - Cm', 'Cm - Gm - Dm - Am', 'Cm - F - G - C']
+                }
+            },
+            'Disco': {
+                keys: ['F#m', 'Bm', 'E', 'A'],
+                progressions: {
+                    'F#m': ['F#m - D - A - E', 'F#m - C# - D - A', 'F#m - B - E - A', 'F#m - D - A - B'],
+                    'Bm': ['Bm - G - D - A', 'Bm - F# - G - D', 'Bm - E - A - D', 'Bm - G - D - E'],
+                    'E': ['E - A - B - E', 'E - D - A - E', 'E - G - A - D', 'E - C#m - A - B'],
+                    'A': ['A - D - E - A', 'A - G - D - A', 'A - E - F#m - D', 'A - Bm - D - E']
+                }
+            },
+            'Hip Hop': {
+                keys: ['Cm', 'G#m', 'Fm', 'D#'],
+                progressions: {
+                    'Cm': ['Cm - Ab - Eb - Bb', 'Cm - Fm - Gm - D#', 'Cm - G# - Fm - Ab', 'Cm - Eb - Bb - F'],
+                    'G#m': ['G#m - E - B - F#', 'G#m - D# - A# - F', 'G#m - C# - F# - B', 'G#m - E - B - G#m'],
+                    'Fm': ['Fm - Cm - Gm - Dm', 'Fm - Bbm - Eb - Ab', 'Fm - Db - Ab - Eb', 'Fm - G# - C# - F#'],
+                    'D#': ['D# - A# - D# - A#', 'D# - G# - C# - F##', 'D# - Fm - A# - D#', 'D# - Gm - C - F']
+                }
+            },
+            'Latin': {
+                keys: ['Dm', 'Am', 'G', 'F'],
+                progressions: {
+                    'Dm': ['Dm - G7 - C - F', 'Dm - A7 - Dm - A7', 'Dm - Gm - C7 - F', 'Dm - Bb - C - F'],
+                    'Am': ['Am - Dm - G7 - C', 'Am - E7 - Am - E7', 'Am - F - G - C', 'Am - G - F - E'],
+                    'G': ['G - C - D - G', 'G - Em - C - D', 'G - D - Em - C', 'G - Am - C - D'],
+                    'F': ['F - Bb - C - F', 'F - Am - Dm - G', 'F - C - Dm - Bb', 'F - Gm - C - F']
+                }
+            },
+            'Gospel': {
+                keys: ['C', 'G', 'F', 'D'],
+                progressions: {
+                    'C': ['C - Am - F - G', 'C - G/B - Am - F', 'C - Dm7 - G7 - C', 'C - F/A - G - C'],
+                    'G': ['G - D/F# - Em - C', 'G - Bm - C - D', 'G - C/E - D - G', 'G - Em7 - D7 - G'],
+                    'F': ['F - Bb - C - F', 'F - Am - Dm - G', 'F - C - Dm - Bb', 'F - Gm - C - F'],
+                    'D': ['D - A - Bm - G', 'D - G - A - D', 'D - F#m - Bm - E', 'D - Em - G - A']
+                }
+            },
+            'Funk': {
+                keys: ['E7', 'A7', 'D7', 'G7'],
+                progressions: {
+                    'E7': ['E7 - A7 - D7 - G7', 'E7 - B7 - A7 - E7', 'E7 - C#7 - F#7 - B7', 'E7 - G7 - C7 - F7'],
+                    'A7': ['A7 - D7 - E7 - A7', 'A7 - G7 - C7 - F7', 'A7 - B7 - E7 - A7', 'A7 - F7 - B7 - E7'],
+                    'D7': ['D7 - G7 - C7 - F7', 'D7 - A7 - D7 - A7', 'D7 - Em7 - A7 - D7', 'D7 - Bm7 - Em7 - A7'],
+                    'G7': ['G7 - C7 - F7 - Bb7', 'G7 - D7 - G7 - D7', 'G7 - Am7 - D7 - G7', 'G7 - Em7 - Am7 - D7']
+                }
+            }
+        };
+
+        const chordData = {
+            'A': `
+            E A D G B E
+            ╓─┬─┬─┬─┐
+            │ │ │ │ │ 0
+            ╟─┼─┼─┼─┤
+            │ ● │ │ │ 1
+            ╟─┼─┼─┼─┤
+            │ │ ● │ │ 2
+            ╙─┴─┴─┴─┘
+            `,
+            'Am': `
+            E A D G B E
+            ╓─┬─┬─┬─┐
+            │ │ │ │ │ 0
+            ╟─┼─┼─┼─┤
+            ● │ │ │ │ 1
+            ╟─┼─┼─┼─┤
+            │ │ ● │ │ 2
+            ╙─┴─┴─┴─┘
+            `,
+            'B': `
+            E A D G B E
+            ╓─┬─┬─┬─┐
+            │ ● │ │ │ 1
+            ╟─┼─┼─┼─┤
+            │ ● │ │ │ 2
+            ╟─┼─┼─┼─┤
+            │ │ ● │ │ 3
+            ╙─┴─┴─┴─┘
+            `,
+            'Bm': `
+            E A D G B E
+            ╓─┬─┬─┬─┐
+            │ │ │ │ │ 0
+            ╟─┼─┼─┼─┤
+            ● ● │ │ │ 1
+            ╟─┼─┼─┼─┤
+            │ │ │ ● │ 2
+            ╙─┴─┴─┴─┘
+            `,
+            'C': `
+            E A D G B E
+            ╓─┬─┬─┬─┐
+            │ │ │ │ │ 0
+            ╟─┼─┼─┼─┤
+            │ ● │ │ │ 1
+            ╟─┼─┼─┼─┤
+            ● │ │ ● │ 3
+            ╙─┴─┴─┴─┘
+            `,
+            'Cm': `
+            E A D G B E
+            ╓─┬─┬─┬─┐
+            │ │ │ │ │ 0
+            ╟─┼─┼─┼─┤
+            ● │ │ │ │ 1
+            ╟─┼─┼─┼─┤
+            │ │ ● │ │ 3
+            ╟─┼─┼─┼─┤
+            │ ● │ │ │ 4
+            ╙─┴─┴─┴─┘
+            `,
+            'D': `
+            E A D G B E
+            ╓─┬─┬─┬─┐
+            │ │ │ ● │ 0
+            ╟─┼─┼─┼─┤
+            │ ● │ │ │ 1
+            ╟─┼─┼─┼─┤
+            ● │ │ │ │ 2
+            ╙─┴─┴─┴─┘
+            `,
+            'Dm': `
+            E A D G B E
+            ╓─┬─┬─┬─┐
+            │ │ │ ● │ 0
+            ╟─┼─┼─┼─┤
+            │ ● │ │ │ 1
+            ╟─┼─┼─┼─┤
+            ● │ │ │ │ 2
+            ╙─┴─┴─┴─┘
+            `,
+            'E': `
+            E A D G B E
+            ╓─┬─┬─┬─┐
+            ● │ │ │ │ 0
+            ╟─┼─┼─┼─┤
+            │ ● │ │ │ 1
+            ╟─┼─┼─┼─┤
+            │ │ ● │ │ 2
+            ╙─┴─┴─┴─┘
+            `,
+            'Em': `
+            E A D G B E
+            ╓─┬─┬─┬─┐
+            │ │ │ │ │ 0
+            ╟─┼─┼─┼─┤
+            ● │ │ │ │ 1
+            ╟─┼─┼─┼─┤
+            │ │ ● │ │ 2
+            ╙─┴─┴─┴─┘
+            `,
+            'F': `
+            E A D G B E
+            ╓─┬─┬─┬─┐
+            │ ● │ │ │ 1
+            ╟─┼─┼─┼─┤
+            ● │ │ │ │ 2
+            ╟─┼─┼─┼─┤
+            │ │ │ ● │ 3
+            ╙─┴─┴─┴─┘
+            `,
+            'Fm': `
+            E A D G B E
+            ╓─┬─┬─┬─┐
+            │ ● │ │ │ 1
+            ╟─┼─┼─┼─┤
+            ● │ │ │ │ 2
+            ╟─┼─┼─┼─┤
+            │ │ ● │ │ 3
+            ╙─┴─┴─┴─┘
+            `,
+            'G': `
+            E A D G B E
+            ╓─┬─┬─┬─┐
+            │ │ ● │ │ 0
+            ╟─┼─┼─┼─┤
+            │ ● │ │ │ 1
+            ╟─┼─┼─┼─┤
+            ● │ │ │ │ 2
+            ╟─┼─┼─┼─┤
+            │ │ │ ● │ 3
+            ╙─┴─┴─┴─┘
+            `,
+            'Gm': `
+            E A D G B E
+            ╓─┬─┬─┬─┐
+            │ │ ● │ │ 1
+            ╟─┼─┼─┼─┤
+            │ ● │ │ │ 2
+            ╟─┼─┼─┼─┤
+            ● │ │ │ │ 3
+            ╙─┴─┴─┴─┘
+            `,
+            'A5': `
+            E A D G B E
+            ╓─┬─┬─┬─┐
+            │ │ │ │ │ 0
+            ╟─┼─┼─┼─┤
+            ● ● │ │ │ 1
+            ╙─┴─┴─┴─┘
+            `,
+            'B5': `
+            E A D G B E
+            ╓─┬─┬─┬─┐
+            │ ● ● │ │ 2
+            ╙─┴─┴─┴─┘
+            `,
+            'C5': `
+            E A D G B E
+            ╓─┬─┬─┬─┐
+            │ │ ● ● │ 3
+            ╙─┴─┴─┴─┘
+            `,
+            'D5': `
+            E A D G B E
+            ╓─┬─┬─┬─┐
+            │ │ ● ● │ 0
+            ╟─┼─┼─┼─┤
+            │ ● │ │ │ 1
+            ╙─┴─┴─┴─┘
+            `,
+            'E5': `
+            E A D G B E
+            ╓─┬─┬─┬─┐
+            ● ● │ │ │ 0
+            ╙─┴─┴─┴─┘
+            `,
+            'F5': `
+            E A D G B E
+            ╓─┬─┬─┬─┐
+            │ ● ● │ │ 1
+            ╟─┼─┼─┼─┤
+            ● │ │ │ │ 3
+            ╙─┴─┴─┴─┘
+            `,
+            'G5': `
+            E A D G B E
+            ╓─┬─┬─┬─┐
+            │ │ ● ● │ 3
+            ╟─┼─┼─┼─┤
+            ● │ │ │ │ 5
+            ╙─┴─┴─┴─┘
+            `
+        };
+
+        // Initialize style options
+        const styleOptions = document.getElementById('styleOptions');
+        Object.keys(styleData).forEach(style => {
+            const button = document.createElement('button');
+            button.textContent = style;
+            button.onclick = () => selectStyle(style);
+            styleOptions.appendChild(button);
+        });
+
+        let currentStyle;
+
+        function selectStyle(style) {
+            currentStyle = style;
+            const keyOptions = document.getElementById('keyOptions');
+            keyOptions.innerHTML = '';
+            
+            styleData[style].keys.forEach(key => {
+                const button = document.createElement('button');
+                button.textContent = key;
+                button.onclick = () => selectKey(key);
+                keyOptions.appendChild(button);
+            });
+            
+            showStep('keyStep');
+        }
+
+        function createProgressionElement(progression) {
+            const div = document.createElement('div');
+            div.className = 'progression';
+            
+            progression.split(' - ').forEach((chord, index) => {
+                const span = document.createElement('span');
+                const baseChord = chord.replace(/[0-9]|maj|min|sus|dim|aug/g, '');
+                span.className = 'chord';
+                span.textContent = chord;
+                span.onclick = () => showChordDiagram(baseChord);
+                if(index > 0) div.appendChild(document.createTextNode(' - '));
+                div.appendChild(span);
+            });
+            
+            return div;
+        }
+
+        function selectKey(key) {
+            const progressions = document.getElementById('progressions');
+            progressions.innerHTML = '';
+            
+            styleData[currentStyle].progressions[key].forEach(prog => {
+                progressions.appendChild(createProgressionElement(prog));
+            });
+            
+            showStep('progressionStep');
+        }
+
+        function showChordDiagram(chord) {
+            const modal = document.getElementById('chordModal');
+            const title = document.getElementById('chordTitle');
+            const diagram = document.getElementById('chordDiagram');
+            
+            title.textContent = `${chord} Chord`;
+            diagram.textContent = chordData[chord] || 'Diagram not available\n(Try root chord without extensions)';
+            modal.style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('chordModal').style.display = 'none';
+        }
+
+        function showStep(stepId) {
+            document.querySelectorAll('.step').forEach(step => {
+                step.classList.remove('active');
+            });
+            document.getElementById(stepId).classList.add('active');
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('chordModal');
+            if(event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
